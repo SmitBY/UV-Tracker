@@ -39,8 +39,8 @@ struct UVIndicatorView: View {
             Triangle()
                 .fill(Color.white)
                 .frame(width: 62, height: 62)
-                .offset(y: -163) // Distance from center
-                .rotationEffect(.degrees(-90 + (min(uvIndex, 11.0) / 11.0) * 180.0)) // Rotate based on UV index
+                .offset(y: -128) // Distance from center
+                .rotationEffect(.degrees(180 + (min(uvIndex, 11.0) / 11.0) * 180.0)) // Rotate based on UV index
                 .shadow(color: Color.black.opacity(0.15), radius: 3, x: 0, y: 2)
 
             // Central Circle (240x240 with gradient)
@@ -80,9 +80,9 @@ struct Triangle: Shape {
     func path(in rect: CGRect) -> Path {
         var path = Path()
         // Triangle pointing downward (outward from center)
-        path.move(to: CGPoint(x: rect.midX, y: rect.maxY)) // Bottom center
-        path.addLine(to: CGPoint(x: rect.minX, y: rect.minY)) // Top left
-        path.addLine(to: CGPoint(x: rect.maxX, y: rect.minY)) // Top right
+        path.move(to: CGPoint(x: rect.midX, y: rect.minY)) // Bottom center
+        path.addLine(to: CGPoint(x: rect.minX, y: rect.maxY)) // Top left
+        path.addLine(to: CGPoint(x: rect.maxX, y: rect.maxY)) // Top right
         path.closeSubpath()
         return path
     }

@@ -56,26 +56,55 @@ actor UVService {
             print("WARNING: OpenUV Key is missing. Using mock data for development.")
             return 4.2 // Return a mock UV index instead of throwing
         }
-        
+
         let urlString = "https://api.openuv.io/api/v1/uv?lat=\(latitude)&lng=\(longitude)"
         guard let url = URL(string: urlString) else {
             throw UVServiceError.invalidURL
         }
-        
+
         var request = URLRequest(url: url)
         request.addValue(openUVKey, forHTTPHeaderField: "x-access-token")
-        
+
+        // Логируем информацию о запросе
+        print("🌐 [NETWORK REQUEST] OpenUV API")
+        print("   URL: \(urlString)")
+        print("   Method: \(request.httpMethod ?? "GET")")
+        print("   Headers: [x-access-token: [FILTERED]]")
+        print("   Location: lat=\(latitude), lng=\(longitude)")
+
         let (data, response) = try await URLSession.shared.data(for: request)
-        
+
+        // Логируем информацию об ответе
+        if let httpResponse = response as? HTTPURLResponse {
+            print("🌐 [NETWORK RESPONSE] OpenUV API")
+            print("   Status Code: \(httpResponse.statusCode)")
+            print("   Headers: \(httpResponse.allHeaderFields)")
+
+            // Логируем полный JSON ответ
+            if let jsonString = String(data: data, encoding: .utf8) {
+                print("   Response Body: \(jsonString)")
+            } else {
+                print("   Response Body: Unable to decode as UTF-8 string")
+            }
+
+            // Логируем размер данных
+            print("   Data Size: \(data.count) bytes")
+        }
+
         guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
+            print("❌ [NETWORK ERROR] Invalid response from OpenUV - Status: \((response as? HTTPURLResponse)?.statusCode ?? -1)")
             throw UVServiceError.apiError("Invalid response from OpenUV")
         }
-        
+
         // Decode outside of actor isolation to avoid Swift 6 concurrency issues
         // Use nonisolated(unsafe) structs to allow decoding in detached task
         let decoded = try await Task.detached { [data] in
             try JSONDecoder().decode(OpenUVResponse.self, from: data)
         }.value
+
+        // Логируем распарсенные данные
+        print("✅ [NETWORK SUCCESS] Parsed UV Index: \(decoded.result.uv)")
+
         return decoded.result.uv
     }
 }

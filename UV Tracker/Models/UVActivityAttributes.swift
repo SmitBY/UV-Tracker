@@ -8,11 +8,11 @@ import ActivityKit
 
 public struct UVActivityAttributes: ActivityAttributes {
     public struct ContentState: Codable, Hashable {
-        public var secondsLeft: Int
+        public var endDate: Date
         public var uvIndex: Double
         
-        public init(secondsLeft: Int, uvIndex: Double) {
-            self.secondsLeft = secondsLeft
+        public init(endDate: Date, uvIndex: Double) {
+            self.endDate = endDate
             self.uvIndex = uvIndex
         }
     }

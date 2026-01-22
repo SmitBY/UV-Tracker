@@ -27,7 +27,7 @@ struct UVActivityWidget: Widget {
                 HStack {
                     Text("widget_remains")
                     Spacer()
-                    Text(formatSeconds(context.state.secondsLeft))
+                    Text(context.state.endDate, style: .timer)
                         .font(.title2)
                         .monospacedDigit()
                         .bold()
@@ -46,7 +46,7 @@ struct UVActivityWidget: Widget {
                     }
                 }
                 DynamicIslandExpandedRegion(.trailing) {
-                    Text(formatSeconds(context.state.secondsLeft))
+                    Text(context.state.endDate, style: .timer)
                         .monospacedDigit()
                         .bold()
                 }
@@ -65,7 +65,7 @@ struct UVActivityWidget: Widget {
                 Image(systemName: "sun.max.fill")
                     .foregroundColor(.orange)
             } compactTrailing: {
-                Text(formatSeconds(context.state.secondsLeft))
+                Text(context.state.endDate, style: .timer)
                     .monospacedDigit()
                     .bold()
             } minimal: {
@@ -74,32 +74,11 @@ struct UVActivityWidget: Widget {
             }
         }
     }
-    
-    private func formatSeconds(_ seconds: Int) -> String {
-        let minutes = seconds / 60
-        let remainingSeconds = seconds % 60
-        return String(format: "%d:%02d", minutes, remainingSeconds)
-    }
 }
 
 @main
 struct UVActivityWidgetBundle: WidgetBundle {
     var body: some Widget {
         UVActivityWidget()
-    }
-}
-
-struct UVActivityWidget_Previews: PreviewProvider {
-    static var previews: some View {
-        UVActivityWidget()
-            .previewContext(ActivityPreviewContext(
-                activity: Activity(
-                    attributes: UVActivityAttributes(),
-                    content: ActivityContent(
-                        state: UVActivityAttributes.ContentState(secondsLeft: 1800, uvIndex: 8.5),
-                        staleDate: nil
-                    )
-                )
-            ))
     }
 }
