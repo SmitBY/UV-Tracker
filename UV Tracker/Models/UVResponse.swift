@@ -21,5 +21,11 @@ nonisolated(unsafe) struct OpenUVResponse: Codable, Sendable {
 
 nonisolated(unsafe) struct UVResult: Codable, Sendable {
     let uv: Double
+    let uvMax: Double?
+
+    enum CodingKeys: String, CodingKey {
+        case uv
+        case uvMax = "uv_max"
+    }
 }
 

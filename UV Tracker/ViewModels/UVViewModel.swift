@@ -45,16 +45,14 @@ class UVViewModel: ObservableObject {
             locationManager.requestLocation()
             return
         }
-        
+
         isLoading = true
         Task {
             do {
-                let uvIndex = try await uvService.fetchUVIndex(for: location)
-                self.currentUV = uvIndex
-                if uvIndex > self.maxUVToday {
-                    self.maxUVToday = uvIndex
-                }
-                
+                let uvData = try await uvService.fetchUVData(for: location)
+                self.currentUV = uvData.currentUV
+                self.maxUVToday = uvData.maxUV // Use max UV from API
+
                 await updateBurnTime()
                 self.isLoading = false
             } catch {

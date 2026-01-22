@@ -30,12 +30,12 @@ actor UVService {
         return "openuv-2wgasrmjn3w1fo-io"
     }
     
-    func fetchUVIndex(for location: CLLocation) async throws -> Double {
+    func fetchUVData(for location: CLLocation) async throws -> (currentUV: Double, maxUV: Double) {
         // Step 1: Try EPA (US Only)
         if let epaIndex = try? await fetchFromEPA(latitude: location.coordinate.latitude, longitude: location.coordinate.longitude) {
-            return epaIndex
+            return (epaIndex, epaIndex) // EPA doesn't provide max UV, so use current as max
         }
-        
+
         // Step 2: Fallback to OpenUV
         do {
             return try await fetchFromOpenUV(latitude: location.coordinate.latitude, longitude: location.coordinate.longitude)
@@ -44,6 +44,12 @@ actor UVService {
             throw error
         }
     }
+
+    // Keep backward compatibility
+    func fetchUVIndex(for location: CLLocation) async throws -> Double {
+        let (currentUV, _) = try await fetchUVData(for: location)
+        return currentUV
+    }
     
     private func fetchFromEPA(latitude: Double, longitude: Double) async throws -> Double {
         // EPA Enpoint placeholder (Requires specific ZIP code logic usually)
@@ -51,7 +57,7 @@ actor UVService {
         throw UVServiceError.noData
     }
     
-    private func fetchFromOpenUV(latitude: Double, longitude: Double) async throws -> Double {
+    private func fetchFromOpenUV(latitude: Double, longitude: Double) async throws -> (currentUV: Double, maxUV: Double) {
         guard !openUVKey.isEmpty else {
             print("WARNING: OpenUV Key is missing. Using mock data for development.")
             return 4.2 // Return a mock UV index instead of throwing
@@ -103,9 +109,9 @@ actor UVService {
         }.value
 
         // Логируем распарсенные данные
-        print("✅ [NETWORK SUCCESS] Parsed UV Index: \(decoded.result.uv)")
+        print("✅ [NETWORK SUCCESS] Parsed UV Index: \(decoded.result.uv), Max UV: \(decoded.result.uvMax ?? decoded.result.uv)")
 
-        return decoded.result.uv
+        return (decoded.result.uv, decoded.result.uvMax ?? decoded.result.uv)
     }
 }
 
