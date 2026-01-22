@@ -18,12 +18,12 @@ struct JournalView: View {
     
     var body: some View {
         ZStack {
-            Color(hex: "F0F2F4").ignoresSafeArea()
+            Color(.systemGroupedBackground).ignoresSafeArea()
             VStack(alignment: .leading) {
-                Text(String(localized: "tab_journal"))
+                Text("tab_journal")
                     .font(.system(size: 32, weight: .bold))
                     .kerning(-1)
-                    .foregroundColor(.black)
+                    .foregroundColor(.primary)
                     .padding(.horizontal)
                     .padding(.top)
                 
@@ -32,9 +32,9 @@ struct JournalView: View {
                     VStack(spacing: 20) {
                         Image(systemName: "calendar")
                             .font(.system(size: 60))
-                            .foregroundColor(.black.opacity(0.2))
-                        Text(String(localized: "journal_empty_state"))
-                            .foregroundColor(.black.opacity(0.4))
+                            .foregroundColor(.secondary.opacity(0.4))
+                        Text("journal_empty_state")
+                            .foregroundColor(.secondary.opacity(0.7))
                     }
                     .frame(maxWidth: .infinity)
                     Spacer()
@@ -67,7 +67,7 @@ struct SessionRow: View {
             VStack(alignment: .leading) {
                 Text(session.date?.formatted(date: .abbreviated, time: .shortened) ?? "")
                     .font(.headline)
-                Text("UV Index: \(String(format: "%.1f", session.uvIndex))")
+                Text("UV Index: \(session.uvIndex, specifier: "%.1f")")
                     .font(.subheadline)
                     .foregroundColor(.secondary)
             }
@@ -77,6 +77,6 @@ struct SessionRow: View {
                 .foregroundColor(Color(hex: "818CD5"))
         }
         .padding(.vertical, 8)
-        .listRowBackground(Color.white.opacity(0.5))
+        .listRowBackground(Color(.secondarySystemGroupedBackground))
     }
 }

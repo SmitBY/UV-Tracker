@@ -9,13 +9,13 @@ import Foundation
 
 struct OnboardingAnswer: Identifiable, Hashable {
     let id = UUID()
-    let text: String
+    let textKey: String
     let score: Int
 }
 
 struct OnboardingQuestion: Identifiable {
     let id: Int
-    let title: String
+    let titleKey: String
     let answers: [OnboardingAnswer]
 }
 

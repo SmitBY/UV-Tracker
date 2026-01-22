@@ -60,7 +60,7 @@ actor UVService {
     private func fetchFromOpenUV(latitude: Double, longitude: Double) async throws -> (currentUV: Double, maxUV: Double) {
         guard !openUVKey.isEmpty else {
             print("WARNING: OpenUV Key is missing. Using mock data for development.")
-            return 4.2 // Return a mock UV index instead of throwing
+            return (4.2, 4.2) // Return a mock UV index instead of throwing
         }
 
         let urlString = "https://api.openuv.io/api/v1/uv?lat=\(latitude)&lng=\(longitude)"
@@ -98,15 +98,27 @@ actor UVService {
         }
 
         guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
-            print("❌ [NETWORK ERROR] Invalid response from OpenUV - Status: \((response as? HTTPURLResponse)?.statusCode ?? -1)")
-            throw UVServiceError.apiError("Invalid response from OpenUV")
+            let statusCode = (response as? HTTPURLResponse)?.statusCode ?? -1
+            print("❌ [NETWORK ERROR] Invalid response from OpenUV - Status: \(statusCode)")
+            
+            if statusCode == 403 {
+                if let errorResponse = try? JSONDecoder().decode(OpenUVErrorResponse.self, from: data) {
+                    #if DEBUG
+                    print("⚠️ Quota exceeded, but we are in DEBUG mode. Returning mock data.")
+                    return (4.2, 5.5) // Mock data for development
+                    #else
+                    throw UVServiceError.apiError(errorResponse.error)
+                    #endif
+                }
+            }
+            
+            throw UVServiceError.apiError("Invalid response from OpenUV (Status: \(statusCode))")
         }
 
-        // Decode outside of actor isolation to avoid Swift 6 concurrency issues
-        // Use nonisolated(unsafe) structs to allow decoding in detached task
-        let decoded = try await Task.detached { [data] in
+        // Decode response on MainActor to satisfy Swift 6 isolation requirements
+        let decoded = try await MainActor.run {
             try JSONDecoder().decode(OpenUVResponse.self, from: data)
-        }.value
+        }
 
         // Логируем распарсенные данные
         print("✅ [NETWORK SUCCESS] Parsed UV Index: \(decoded.result.uv), Max UV: \(decoded.result.uvMax ?? decoded.result.uv)")

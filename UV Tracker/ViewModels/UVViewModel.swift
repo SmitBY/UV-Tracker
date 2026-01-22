@@ -18,6 +18,7 @@ class UVViewModel: ObservableObject {
     @Published var selectedSPF: Int = 30
     @Published var isLoading: Bool = false
     @Published var errorMessage: String?
+    @Published var lastUpdate: Date?
     
     @Published var timerManager = TimerManager.shared
     private let uvService = UVService.shared
@@ -31,9 +32,15 @@ class UVViewModel: ObservableObject {
     }
     
     private func setupSubscriptions() {
+        timerManager.objectWillChange
+            .sink { [weak self] _ in
+                self?.objectWillChange.send()
+            }
+            .store(in: &cancellables)
+
         locationManager.$location
             .compactMap { $0 }
-            .debounce(for: .seconds(10), scheduler: RunLoop.main)
+            .debounce(for: .seconds(60), scheduler: RunLoop.main)
             .sink { [weak self] _ in
                 self?.refreshUV()
             }
@@ -41,6 +48,12 @@ class UVViewModel: ObservableObject {
     }
     
     func refreshUV() {
+        // Don't refresh if we updated less than 15 minutes ago
+        if let lastUpdate = lastUpdate, Date().timeIntervalSince(lastUpdate) < 900 {
+            print("Skipping UV refresh, last update was less than 15 minutes ago")
+            return
+        }
+
         guard let location = locationManager.location else {
             locationManager.requestLocation()
             return
@@ -51,10 +64,12 @@ class UVViewModel: ObservableObject {
             do {
                 let uvData = try await uvService.fetchUVData(for: location)
                 self.currentUV = uvData.currentUV
-                self.maxUVToday = uvData.maxUV // Use max UV from API
+                self.maxUVToday = uvData.maxUV
+                self.lastUpdate = Date()
 
-                await updateBurnTime()
+                updateBurnTime()
                 self.isLoading = false
+                self.errorMessage = nil
             } catch {
                 self.errorMessage = "Failed to fetch UV: \(error.localizedDescription)"
                 self.isLoading = false
@@ -62,7 +77,7 @@ class UVViewModel: ObservableObject {
         }
     }
     
-    private func updateBurnTime() async {
+    private func updateBurnTime() {
         let profile = ProfileManager.shared.profile
         guard let skinType = profile.skinType else { return }
         
@@ -94,10 +109,8 @@ class UVViewModel: ObservableObject {
     }
     
     func startSession() {
-        Task {
-            await updateBurnTime()
-            timerManager.startTimer(seconds: timeToBurnSeconds, uvIndex: currentUV)
-        }
+        updateBurnTime()
+        timerManager.startTimer(seconds: timeToBurnSeconds, uvIndex: currentUV)
     }
 }
 

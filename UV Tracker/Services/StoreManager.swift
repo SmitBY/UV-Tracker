@@ -18,6 +18,17 @@ class StoreManager: ObservableObject {
     
     private var updates: Task<Void, Never>? = nil
     private let premiumProductID = "com.uvtracker.premium"
+
+    enum StoreError: LocalizedError {
+        case productNotFound
+        
+        var errorDescription: String? {
+            switch self {
+            case .productNotFound:
+                return "Product not found. Please try again later."
+            }
+        }
+    }
     
     private init() {
         self.updates = observeTransactionUpdates()
@@ -40,7 +51,10 @@ class StoreManager: ObservableObject {
     }
     
     func purchase() async throws {
-        guard let product = products.first else { return }
+        if products.isEmpty {
+            await fetchProducts()
+        }
+        guard let product = products.first else { throw StoreError.productNotFound }
         
         let result = try await product.purchase()
         

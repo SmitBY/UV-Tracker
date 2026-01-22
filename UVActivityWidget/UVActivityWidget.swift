@@ -17,10 +17,10 @@ struct UVActivityWidget: Widget {
                 HStack {
                     Image(systemName: "sun.max.fill")
                         .foregroundColor(.orange)
-                    Text("UV Tracker")
+                    Text("app_name")
                         .font(.headline)
                     Spacer()
-                    Text("UV: \(String(format: "%.1f", context.state.uvIndex))")
+                    Text("UV: \(context.state.uvIndex, specifier: "%.1f")")
                         .bold()
                 }
                 
@@ -51,12 +51,12 @@ struct UVActivityWidget: Widget {
                         .bold()
                 }
                 DynamicIslandExpandedRegion(.center) {
-                    Text("UV Tracker")
+                    Text("app_name")
                         .font(.caption)
                         .foregroundColor(.secondary)
                 }
                 DynamicIslandExpandedRegion(.bottom) {
-                    Text("Stay safe in the sun!")
+                    Text("widget_stay_safe")
                         .font(.caption2)
                         .foregroundColor(.secondary)
                         .padding(.bottom, 8)

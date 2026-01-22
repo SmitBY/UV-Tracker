@@ -14,18 +14,18 @@ struct MainDashboardView: View {
     var body: some View {
         GeometryReader { geometry in
             ZStack(alignment: .topLeading) {
-                Color(hex: "F0F2F4").ignoresSafeArea()
+                Color(.systemGroupedBackground).ignoresSafeArea()
 
                 // Header: Time to get sunburn (left aligned with 16px padding)
                 VStack(alignment: .leading, spacing: -15) {
                     Text("dashboard_time_to_burn")
                         .font(.system(size: 16, weight: .regular, design: .default))
-                        .foregroundColor(.black)
+                        .foregroundColor(.primary)
                         .kerning(-1)
 
                     Text(formatSeconds(viewModel.timerManager.isTimerRunning ? viewModel.timerManager.secondsLeft : viewModel.timeToBurnSeconds))
                         .font(.system(size: 80, weight: .medium, design: .default))
-                        .foregroundColor(.black)
+                        .foregroundColor(.primary)
                         .kerning(-1)
                 }
                 .frame(width: geometry.size.width, alignment: .leading)
@@ -41,21 +41,21 @@ struct MainDashboardView: View {
                     // Label above the card
                     Text("dashboard_recommended")
                         .font(.system(size: 12, weight: .regular, design: .default))
-                        .foregroundColor(Color(hex: "989898"))
+                        .foregroundColor(.secondary)
 
                     // Card below the label
                     VStack(alignment: .leading, spacing: 2) {
                         Text("SPF \(viewModel.selectedSPF)")
                             .font(.system(size: 14, weight: .medium, design: .default))
-                            .foregroundColor(.black)
+                            .foregroundColor(.primary)
                             .kerning(-1)
                         Text("protection_cream")
                             .font(.system(size: 12, weight: .regular, design: .default))
-                            .foregroundColor(Color(hex: "989898"))
+                            .foregroundColor(.secondary)
                     }
                     .frame(width: 90, height: 120, alignment: .topLeading)
                     .padding(.vertical, 10)
-                    .background(Color(hex: "FBFBFB"))
+                    .background(Color(.secondarySystemGroupedBackground))
                     .cornerRadius(6)
                     .shadow(color: Color.black.opacity(0.25), radius: 4, x: 0, y: 4)
                 }
@@ -65,7 +65,7 @@ struct MainDashboardView: View {
                 VStack(spacing: 15) {
                     Text("dashboard_max_uv")
                         .font(.system(size: 12, weight: .medium, design: .default))
-                        .foregroundColor(.black)
+                        .foregroundColor(.primary)
 
                     ZStack {
                         Circle()
@@ -74,13 +74,13 @@ struct MainDashboardView: View {
 
                         Text("\(Int(viewModel.maxUVToday))")
                             .font(.system(size: 24.5, weight: .medium, design: .default))
-                            .foregroundColor(.black)
+                            .foregroundColor(.primary)
                             .kerning(-1)
                     }
                 }
                 .frame(width: 90, height: 120)
                 .padding(.vertical, 10)
-                .background(Color(hex: "FBFBFB"))
+                .background(Color(.secondarySystemGroupedBackground))
                 .cornerRadius(6)
                 .shadow(color: Color.black.opacity(0.25), radius: 4, x: 0, y: 4)
                 .position(x: 16 + 45, y: 415 + 7) // Match CSS top: 415px
@@ -88,7 +88,7 @@ struct MainDashboardView: View {
                 // Session Info Bar (positioned at 16px left, 632px top)
                 ZStack {
                     RoundedRectangle(cornerRadius: 6)
-                        .fill(Color(hex: "FBFBFB"))
+                        .fill(Color(.secondarySystemGroupedBackground))
                         .frame(width: 369, height: 100)
                         .shadow(color: Color.black.opacity(0.25), radius: 4, x: 0, y: 4)
 
@@ -96,10 +96,10 @@ struct MainDashboardView: View {
                         VStack(alignment: .leading, spacing: 0) {
                             Text("dashboard_time_spent")
                                 .font(.system(size: 12, weight: .regular, design: .default))
-                                .foregroundColor(Color(hex: "979797"))
-                            Text("44m") // Mock data
+                                .foregroundColor(.secondary)
+                            Text("\(44)m") // Mock data
                                 .font(.system(size: 32, weight: .medium, design: .default))
-                                .foregroundColor(.black)
+                                .foregroundColor(.primary)
                         }
                         .frame(width: 120, alignment: .leading)
 
@@ -108,10 +108,10 @@ struct MainDashboardView: View {
                         VStack(alignment: .leading, spacing: 0) {
                             Text("dashboard_uv_dose")
                                 .font(.system(size: 12, weight: .regular, design: .default))
-                                .foregroundColor(Color(hex: "979797"))
+                                .foregroundColor(.secondary)
                             Text("\(String(format: "%.2f", viewModel.uvDose))")
                                 .font(.system(size: 32, weight: .medium, design: .default))
-                                .foregroundColor(.black)
+                                .foregroundColor(.primary)
                         }
                         .frame(width: 80, alignment: .leading)
 
@@ -125,7 +125,7 @@ struct MainDashboardView: View {
                                 Text("action_add_10")
                                     .font(.system(size: 15, weight: .semibold, design: .default))
                                     .foregroundColor(.white)
-                                Text(String(localized: "min"))
+                                Text("min")
                                     .font(.system(size: 10, weight: .regular, design: .default))
                                     .foregroundColor(Color(hex: "3A4482"))
                                     .offset(y: -3)
@@ -143,22 +143,34 @@ struct MainDashboardView: View {
 
                 // Start/Stop Button (positioned below session info bar)
                 Button(action: {
-                    if viewModel.timerManager.isTimerRunning {
-                        viewModel.timerManager.stopTimer()
-                    } else {
-                        viewModel.startSession()
+                    withAnimation {
+                        if viewModel.timerManager.isTimerRunning {
+                            viewModel.timerManager.stopTimer()
+                        } else {
+                            viewModel.startSession()
+                        }
                     }
                 }) {
                     Text(viewModel.timerManager.isTimerRunning ? "button_stop" : "button_start")
                         .font(.system(size: 17, weight: .semibold, design: .default))
-                        .foregroundColor(.white)
+                        .foregroundColor(viewModel.timerManager.isTimerRunning ? .white : Color(.systemBackground))
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 16)
-                        .background(viewModel.timerManager.isTimerRunning ? Color.red : Color.black)
+                        .background(viewModel.timerManager.isTimerRunning ? Color.red : Color.primary)
                         .cornerRadius(12)
                 }
                 .frame(width: geometry.size.width - 32, height: 50)
                 .position(x: geometry.size.width/2, y: 675) // Below session info bar
+            }
+        }
+        .alert("Error", isPresented: Binding(
+            get: { viewModel.errorMessage != nil },
+            set: { if !$0 { viewModel.errorMessage = nil } }
+        )) {
+            Button("OK", role: .cancel) { }
+        } message: {
+            if let errorMessage = viewModel.errorMessage {
+                Text(errorMessage)
             }
         }
     }

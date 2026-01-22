@@ -15,11 +15,11 @@ struct UVResponse: Codable, Sendable {
     }
 }
 
-nonisolated(unsafe) struct OpenUVResponse: Codable, Sendable {
+struct OpenUVResponse: Codable, Sendable {
     let result: UVResult
 }
 
-nonisolated(unsafe) struct UVResult: Codable, Sendable {
+struct UVResult: Codable, Sendable {
     let uv: Double
     let uvMax: Double?
 
@@ -27,5 +27,9 @@ nonisolated(unsafe) struct UVResult: Codable, Sendable {
         case uv
         case uvMax = "uv_max"
     }
+}
+
+struct OpenUVErrorResponse: Codable, Sendable {
+    let error: String
 }
 

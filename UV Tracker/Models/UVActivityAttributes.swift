@@ -19,7 +19,7 @@ public struct UVActivityAttributes: ActivityAttributes {
     
     public var name: String
     
-    public init(name: String = "UV Session") {
+    public init(name: String = String(localized: "widget_uv_session")) {
         self.name = name
     }
 }

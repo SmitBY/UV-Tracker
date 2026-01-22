@@ -77,8 +77,8 @@ private struct BottomTabBar: View {
     @Binding var selectedTab: MainTab
     let onPlus: () -> Void
 
-    private let activeColor = Color.black
-    private let inactiveColor = Color(hex: "B0B3BB")
+    private let activeColor = Color.primary
+    private let inactiveColor = Color.secondary
     private let barHeight: CGFloat = 52
 
     var body: some View {
@@ -123,9 +123,9 @@ private struct BottomTabBar: View {
             )
         }
         .frame(height: barHeight)
-        .background(Color(hex: "F0F2F4"))
+        .background(Color(.systemGroupedBackground))
         .shadow(color: Color.black.opacity(0.1), radius: 10, x: 0, y: -8)
-        .background(Color(hex: "F0F2F4").ignoresSafeArea(edges: .bottom))
+        .background(Color(.systemGroupedBackground).ignoresSafeArea(edges: .bottom))
     }
 
     private func tabButton(tab: MainTab, systemImage: String, titleKey: LocalizedStringKey) -> some View {

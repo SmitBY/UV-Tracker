@@ -36,6 +36,17 @@ enum SkinType: Int, Codable, CaseIterable {
         case .type6: return String(localized: "skin_type_6_name")
         }
     }
+    
+    var nameKey: String {
+        switch self {
+        case .type1: return "skin_type_1_name"
+        case .type2: return "skin_type_2_name"
+        case .type3: return "skin_type_3_name"
+        case .type4: return "skin_type_4_name"
+        case .type5: return "skin_type_5_name"
+        case .type6: return "skin_type_6_name"
+        }
+    }
 }
 
 struct UserProfile: Codable {

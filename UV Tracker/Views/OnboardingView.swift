@@ -57,12 +57,12 @@ struct OnboardingView: View {
         VStack(alignment: .leading, spacing: 20) {
             Spacer().frame(height: 100)
             
-            Text(String(localized: "welcome_title"))
+            Text("welcome_title")
                 .font(.system(size: 32, weight: .bold))
                 .kerning(-1)
                 .foregroundColor(.black)
             
-            Text(String(localized: "welcome_subtitle"))
+            Text("welcome_subtitle")
                 .font(.system(size: 20))
                 .foregroundColor(Color(hex: "636363"))
                 .lineSpacing(4)
@@ -78,16 +78,16 @@ struct OnboardingView: View {
         VStack(alignment: .leading, spacing: 20) {
             Spacer().frame(height: 100)
             
-            Text(String(localized: "location_title"))
+            Text("location_title")
                 .font(.system(size: 32, weight: .bold))
                 .kerning(-1)
                 .foregroundColor(.black)
             
             VStack(alignment: .leading, spacing: 16) {
-                LocationBenefitRow(text: String(localized: "location_benefit_1"))
-                LocationBenefitRow(text: String(localized: "location_benefit_2"))
-                LocationBenefitRow(text: String(localized: "location_benefit_3"))
-                LocationBenefitRow(text: String(localized: "location_benefit_4"))
+                LocationBenefitRow(textKey: "location_benefit_1")
+                LocationBenefitRow(textKey: "location_benefit_2")
+                LocationBenefitRow(textKey: "location_benefit_3")
+                LocationBenefitRow(textKey: "location_benefit_4")
             }
             .padding(.top, 20)
             
@@ -102,7 +102,7 @@ struct OnboardingView: View {
         VStack(alignment: .leading, spacing: 20) {
             Spacer().frame(height: 100)
             
-            Text(question.title)
+            Text(LocalizedStringKey(question.titleKey))
                 .font(.system(size: 32, weight: .bold))
                 .kerning(-1)
                 .foregroundColor(.black)
@@ -112,7 +112,7 @@ struct OnboardingView: View {
                 VStack(spacing: 12) {
                     ForEach(question.answers) { answer in
                         LiquidGlassButton(
-                            text: answer.text,
+                            textKey: LocalizedStringKey(answer.textKey),
                             isSelected: viewModel.selectedAnswerID == answer.id
                         ) {
                             withAnimation(.spring()) {
@@ -135,70 +135,18 @@ struct OnboardingView: View {
     }
     
     private var subscriptionScreen: some View {
-        VStack(alignment: .leading, spacing: 20) {
-            HStack {
-                Spacer()
-                Button(action: {
-                    // Restore action
-                }) {
-                    Text(String(localized: "already_purchased"))
-                        .font(.system(size: 14))
-                        .underline()
-                        .foregroundColor(Color(hex: "636363"))
-                }
-                Spacer()
+        SubscriptionPaywallView(mode: .onboarding(continueAction: {
+            withAnimation {
+                viewModel.nextStep()
             }
-            .padding(.top, 20)
-            
-            Spacer().frame(height: 50)
-            
-            Text(String(localized: "welcome_title"))
-                .font(.system(size: 32, weight: .bold))
-                .kerning(-1)
-                .foregroundColor(.black)
-            
-            Text(String(localized: "subscription_description"))
-                .font(.system(size: 20))
-                .foregroundColor(Color(hex: "636363"))
-            
-            VStack(spacing: 10) {
-                SubscriptionCard(title: "One week", price: "$4.99", subPrice: "$5/Month", isSelected: false)
-                SubscriptionCard(title: "One Year", price: "$89.99/Year", subPrice: "$2.92/Month", isSelected: true, badge: "MOST POPULAR", discount: "-42%")
-                SubscriptionCard(title: "Welcome offer", price: "$24.99/Year", subPrice: "$2.92/Month", isSelected: false, subtitle: "One year")
-            }
-            .padding(.top, 20)
-            
-            Spacer()
-            
-            // Subscription Screen Button (Rectangle 2 in UI2 Subscription frame)
-            Button(action: {
-                withAnimation {
-                    viewModel.nextStep()
-                }
-            }) {
-                Text(String(localized: "onboarding_continue")) // Or "Access for free" from UI2
-                    .font(.system(size: 20, weight: .bold))
-                    .foregroundColor(.black)
-                    .frame(maxWidth: .infinity)
-                    .frame(height: 70)
-                    .background(
-                        LinearGradient(
-                            colors: [Color(hex: "00D0FF"), Color(hex: "B3F7FF")],
-                            startPoint: .top,
-                            endPoint: .bottom
-                        )
-                    )
-                    .cornerRadius(36.5)
-            }
-            .padding(.bottom, 50)
-        }
+        }))
         .transition(.asymmetric(insertion: .move(edge: .trailing), removal: .move(edge: .leading)))
     }
     
     private var resultScreen: some View {
         VStack(spacing: 20) {
             Spacer()
-            Text(String(localized: "result_ready"))
+            Text("result_ready")
                 .font(.system(size: 32, weight: .bold))
                 .kerning(-1)
                 .foregroundColor(.black)
@@ -226,7 +174,7 @@ struct OnboardingView: View {
                 viewModel.nextStep()
             }
         }) {
-            Text(String(localized: "onboarding_continue"))
+            Text("onboarding_continue")
                 .font(.system(size: 20, weight: .bold))
                 .foregroundColor(.black)
                 .frame(maxWidth: .infinity)
@@ -245,26 +193,265 @@ struct OnboardingView: View {
 }
 
 struct LocationBenefitRow: View {
-    let text: String
+    let textKey: LocalizedStringKey
     var body: some View {
         HStack(alignment: .top, spacing: 12) {
             Image(systemName: "checkmark.circle.fill")
                 .foregroundColor(Color(hex: "818CD5"))
-            Text(text)
+            Text(textKey)
                 .font(.system(size: 18))
                 .foregroundColor(Color(hex: "636363"))
         }
     }
 }
 
+enum SubscriptionPlan: String, CaseIterable, Identifiable {
+    case week
+    case year
+    case welcomeOffer
+    
+    var id: String { rawValue }
+    
+    var title: String {
+        switch self {
+        case .week: return "One week"
+        case .year: return "One Year"
+        case .welcomeOffer: return "Welcome offer"
+        }
+    }
+    
+    var price: String {
+        switch self {
+        case .week: return "$4.99"
+        case .year: return "$89.99/Year"
+        case .welcomeOffer: return "$24.99/Year"
+        }
+    }
+    
+    var subPrice: String {
+        switch self {
+        case .week: return "$5/Month"
+        case .year: return "$2.92/Month"
+        case .welcomeOffer: return "$2.92/Month"
+        }
+    }
+    
+    var badge: String? {
+        switch self {
+        case .year: return "MOST POPULAR"
+        default: return nil
+        }
+    }
+    
+    var discount: String? {
+        switch self {
+        case .year: return "-42%"
+        default: return nil
+        }
+    }
+    
+    var subtitle: String? {
+        switch self {
+        case .welcomeOffer: return "One year"
+        default: return nil
+        }
+    }
+}
+
+struct SubscriptionPaywallView: View {
+    enum Mode {
+        case onboarding(continueAction: () -> Void)
+        case profile
+    }
+    
+    @ObservedObject private var storeManager = StoreManager.shared
+    @Environment(\.dismiss) private var dismiss
+    
+    let mode: Mode
+    
+    @State private var selectedPlan: SubscriptionPlan = .year
+    @State private var isPurchasing: Bool = false
+    @State private var isRestoring: Bool = false
+    @State private var errorMessage: String?
+    
+    private var showsCloseButton: Bool {
+        if case .profile = mode { return true }
+        return false
+    }
+    
+    private var primaryButtonTitleKey: LocalizedStringKey {
+        switch mode {
+        case .onboarding:
+            return "onboarding_continue"
+        case .profile:
+            return "subscription_title"
+        }
+    }
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 20) {
+            topBar
+            
+            Spacer().frame(height: 50)
+            
+            Text("subscription_title")
+                .font(.system(size: 32, weight: .bold))
+                .kerning(-1)
+                .foregroundColor(.black)
+            
+            Text("subscription_description")
+                .font(.system(size: 20))
+                .foregroundColor(Color(hex: "636363"))
+            
+            VStack(spacing: 10) {
+                ForEach(SubscriptionPlan.allCases) { plan in
+                    Button {
+                        withAnimation(.spring()) {
+                            selectedPlan = plan
+                        }
+                    } label: {
+                        SubscriptionCard(
+                            title: plan.title,
+                            price: plan.price,
+                            subPrice: plan.subPrice,
+                            isSelected: selectedPlan == plan,
+                            badge: plan.badge,
+                            discount: plan.discount,
+                            subtitle: plan.subtitle
+                        )
+                        .contentShape(Rectangle())
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+            .padding(.top, 20)
+            
+            Spacer()
+            
+            Button {
+                switch mode {
+                case .onboarding(let continueAction):
+                    continueAction()
+                case .profile:
+                    Task { @MainActor in
+                        guard !isPurchasing else { return }
+                        isPurchasing = true
+                        defer { isPurchasing = false }
+                        
+                        do {
+                            try await storeManager.purchase()
+                            if storeManager.isPremium {
+                                dismiss()
+                            }
+                        } catch {
+                            errorMessage = error.localizedDescription
+                        }
+                    }
+                }
+            } label: {
+                HStack {
+                    if isPurchasing {
+                        ProgressView()
+                            .tint(.black)
+                    }
+                    Text(primaryButtonTitleKey)
+                        .font(.system(size: 20, weight: .bold))
+                        .foregroundColor(.black)
+                }
+                .frame(maxWidth: .infinity)
+                .frame(height: 70)
+                .background(
+                    LinearGradient(
+                        colors: [Color(hex: "00D0FF"), Color(hex: "B3F7FF")],
+                        startPoint: .top,
+                        endPoint: .bottom
+                    )
+                )
+                .cornerRadius(36.5)
+                .opacity(isPurchasing ? 0.8 : 1.0)
+            }
+            .disabled(isPurchasing)
+            .padding(.bottom, 50)
+        }
+        .alert("Error", isPresented: Binding(get: {
+            errorMessage != nil
+        }, set: { isPresented in
+            if !isPresented { errorMessage = nil }
+        })) {
+            Button("OK") { errorMessage = nil }
+        } message: {
+            Text(errorMessage ?? "")
+        }
+    }
+    
+    private var topBar: some View {
+        HStack {
+            if showsCloseButton {
+                Button {
+                    dismiss()
+                } label: {
+                    Image(systemName: "xmark")
+                        .font(.system(size: 16, weight: .semibold))
+                        .foregroundColor(.black.opacity(0.7))
+                        .frame(width: 44, height: 44)
+                        .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+            } else {
+                Color.clear.frame(width: 44, height: 44)
+            }
+            
+            Spacer()
+            
+            Button {
+                Task { @MainActor in
+                    guard !isRestoring else { return }
+                    isRestoring = true
+                    defer { isRestoring = false }
+                    
+                    do {
+                        try await storeManager.restorePurchases()
+                        if storeManager.isPremium, showsCloseButton {
+                            dismiss()
+                        }
+                    } catch {
+                        errorMessage = error.localizedDescription
+                    }
+                }
+            } label: {
+                Group {
+                    if isRestoring {
+                        ProgressView()
+                            .tint(Color(hex: "636363"))
+                    } else {
+                        Text("already_purchased")
+                            .underline()
+                    }
+                }
+                .font(.system(size: 14))
+                .foregroundColor(Color(hex: "636363"))
+                .frame(height: 44)
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .disabled(isRestoring)
+            
+            Spacer()
+            
+            Color.clear.frame(width: 44, height: 44)
+        }
+        .padding(.top, 20)
+    }
+}
+
 struct LiquidGlassButton: View {
-    let text: String
+    let textKey: LocalizedStringKey
     let isSelected: Bool
     let action: () -> Void
     
     var body: some View {
         Button(action: action) {
-            Text(text)
+            Text(textKey)
                 .font(.system(size: 17, weight: .medium))
                 .foregroundColor(.black)
                 .frame(maxWidth: .infinity)
@@ -365,7 +552,9 @@ struct SubscriptionCard: View {
 struct Blur: UIViewRepresentable {
     var style: UIBlurEffect.Style = .systemMaterial
     func makeUIView(context: Context) -> UIVisualEffectView {
-        return UIVisualEffectView(effect: UIBlurEffect(style: style))
+        let view = UIVisualEffectView(effect: UIBlurEffect(style: style))
+        view.isUserInteractionEnabled = false
+        return view
     }
     func updateUIView(_ uiView: UIVisualEffectView, context: Context) {
         uiView.effect = UIBlurEffect(style: style)

@@ -10,28 +10,28 @@ import SwiftUI
 struct InfoView: View {
     var body: some View {
         ZStack {
-            Color(hex: "F0F2F4").ignoresSafeArea()
+            Color(.systemGroupedBackground).ignoresSafeArea()
             ScrollView {
                 VStack(alignment: .leading, spacing: 20) {
-                    Text(String(localized: "tab_info"))
+                    Text("tab_info")
                         .font(.system(size: 32, weight: .bold))
                         .kerning(-1)
-                        .foregroundColor(.black)
+                        .foregroundColor(.primary)
                         .padding(.top)
                     
                     InfoSection(
-                        title: String(localized: "info_fitzpatrick_title"),
-                        content: String(localized: "info_fitzpatrick_desc")
+                        titleKey: "info_fitzpatrick_title",
+                        contentKey: "info_fitzpatrick_desc"
                     )
                     
                     InfoSection(
-                        title: String(localized: "info_uv_index_title"),
-                        content: String(localized: "info_uv_index_desc")
+                        titleKey: "info_uv_index_title",
+                        contentKey: "info_uv_index_desc"
                     )
                     
                     InfoSection(
-                        title: String(localized: "info_spf_title"),
-                        content: String(localized: "info_spf_desc")
+                        titleKey: "info_spf_title",
+                        contentKey: "info_spf_desc"
                     )
                 }
                 .padding(.horizontal)
@@ -41,23 +41,23 @@ struct InfoView: View {
 }
 
 struct InfoSection: View {
-    let title: String
-    let content: String
+    let titleKey: LocalizedStringKey
+    let contentKey: LocalizedStringKey
     
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text(title)
+            Text(titleKey)
                 .font(.system(size: 20, weight: .bold))
-                .foregroundColor(.black)
+                .foregroundColor(.primary)
             
-            Text(content)
+            Text(contentKey)
                 .font(.system(size: 16))
-                .foregroundColor(.black.opacity(0.7))
+                .foregroundColor(.secondary)
                 .lineSpacing(4)
         }
         .padding()
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(Color.white)
+        .background(Color(.secondarySystemGroupedBackground))
         .cornerRadius(12)
         .shadow(color: .black.opacity(0.05), radius: 10, x: 0, y: 4)
     }

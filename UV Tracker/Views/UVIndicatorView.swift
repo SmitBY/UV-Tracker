@@ -9,6 +9,7 @@ import SwiftUI
 
 struct UVIndicatorView: View {
     let uvIndex: Double
+    @Environment(\.colorScheme) private var colorScheme
 
     var body: some View {
         ZStack {
@@ -47,7 +48,7 @@ struct UVIndicatorView: View {
             Circle()
                 .fill(
                     LinearGradient(
-                        colors: [Color(hex: "FDFDFD"), Color(hex: "E5E3E3")],
+                        colors: [Color(.systemBackground), Color(.secondarySystemBackground)],
                         startPoint: .top,
                         endPoint: .bottom
                     )
@@ -60,18 +61,18 @@ struct UVIndicatorView: View {
                 .shadow(color: Color.black.opacity(0.1), radius: 10, x: 0, y: 4)
 
             // UV Index Number and Label
-            HStack(alignment: .firstTextBaseline, spacing: 4) {
+            HStack(alignment: .top, spacing: 2) {
                 Text(String(format: "%.0f", uvIndex))
                     .font(.system(size: 96, weight: .medium, design: .default))
-                    .foregroundColor(.black)
-                    .kerning(-1)
+                    .foregroundColor(.primary)
+                    .kerning(-2)
 
-                Text(String(localized: "uv_index_label"))
-                    .font(.system(size: 20, weight: .medium, design: .default))
-                    .foregroundColor(.black)
-                    .kerning(-1)
-                    .offset(y: 8)
+                Text("uv_index_label")
+                    .font(.system(size: 22, weight: .medium, design: .default))
+                    .foregroundColor(.primary)
+                    .padding(.top, 12)
             }
+            .offset(x: -35)
         }
     }
 }
