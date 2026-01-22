@@ -97,7 +97,7 @@ struct MainDashboardView: View {
                             Text("dashboard_time_spent")
                                 .font(.system(size: 12, weight: .regular, design: .default))
                                 .foregroundColor(.secondary)
-                            Text("\(44)m") // Mock data
+                            Text(formatElapsedSeconds(viewModel.timerManager.secondsElapsed))
                                 .font(.system(size: 32, weight: .medium, design: .default))
                                 .foregroundColor(.primary)
                         }
@@ -109,7 +109,7 @@ struct MainDashboardView: View {
                             Text("dashboard_uv_dose")
                                 .font(.system(size: 12, weight: .regular, design: .default))
                                 .foregroundColor(.secondary)
-                            Text("\(String(format: "%.2f", viewModel.uvDose))")
+                            Text("\(String(format: "%.2f", viewModel.timerManager.uvDose))")
                                 .font(.system(size: 32, weight: .medium, design: .default))
                                 .foregroundColor(.primary)
                         }
@@ -122,19 +122,27 @@ struct MainDashboardView: View {
                             viewModel.timerManager.addTenMinutes()
                         }) {
                             VStack(spacing: 0) {
-                                Text("action_add_10")
-                                    .font(.system(size: 15, weight: .semibold, design: .default))
+                                Image("Vector")
+                                    .resizable()
+                                    .renderingMode(.template)
+                                    .scaledToFit()
+                                    .frame(width: 18, height: 18)
                                     .foregroundColor(.white)
-                                Text("min")
-                                    .font(.system(size: 10, weight: .regular, design: .default))
-                                    .foregroundColor(Color(hex: "3A4482"))
-                                    .offset(y: -3)
+                                
+                                Text("+10min")
+                                    .font(.system(size: 12, weight: .semibold))
+                                    .foregroundColor(.white)
+                                
+                                Text("dashboard_cloudy")
+                                    .font(.system(size: 9, weight: .regular))
+                                    .foregroundColor(.white.opacity(0.8))
                             }
                         }
-                        .frame(width: 80, height: 80)
+                        .frame(width: 72, height: 72)
                         .background(Color(hex: "818CD5"))
                         .clipShape(Circle())
                         .shadow(color: Color.black.opacity(0.25), radius: 4, x: 0, y: 4)
+                        .frame(width: 80)
                     }
                     .padding(.horizontal, 20)
                 }
@@ -179,6 +187,11 @@ struct MainDashboardView: View {
         let minutes = seconds / 60
         let remainingSeconds = seconds % 60
         return String(format: "%02d:%02d", minutes, remainingSeconds)
+    }
+
+    private func formatElapsedSeconds(_ seconds: Int) -> String {
+        let minutes = seconds / 60
+        return "\(minutes)m"
     }
 }
 

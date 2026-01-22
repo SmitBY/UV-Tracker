@@ -30,10 +30,10 @@ actor UVService {
         return "openuv-2wgasrmjn3w1fo-io"
     }
     
-    func fetchUVData(for location: CLLocation) async throws -> (currentUV: Double, maxUV: Double) {
+    func fetchUVData(for location: CLLocation) async throws -> (currentUV: Double, maxUV: Double, sunrise: Date?, sunset: Date?) {
         // Step 1: Try EPA (US Only)
         if let epaIndex = try? await fetchFromEPA(latitude: location.coordinate.latitude, longitude: location.coordinate.longitude) {
-            return (epaIndex, epaIndex) // EPA doesn't provide max UV, so use current as max
+            return (epaIndex, epaIndex, nil, nil) // EPA doesn't provide max UV or sun times
         }
 
         // Step 2: Fallback to OpenUV
@@ -47,8 +47,8 @@ actor UVService {
 
     // Keep backward compatibility
     func fetchUVIndex(for location: CLLocation) async throws -> Double {
-        let (currentUV, _) = try await fetchUVData(for: location)
-        return currentUV
+        let uvData = try await fetchUVData(for: location)
+        return uvData.currentUV
     }
     
     private func fetchFromEPA(latitude: Double, longitude: Double) async throws -> Double {
@@ -57,10 +57,9 @@ actor UVService {
         throw UVServiceError.noData
     }
     
-    private func fetchFromOpenUV(latitude: Double, longitude: Double) async throws -> (currentUV: Double, maxUV: Double) {
+    private func fetchFromOpenUV(latitude: Double, longitude: Double) async throws -> (currentUV: Double, maxUV: Double, sunrise: Date?, sunset: Date?) {
         guard !openUVKey.isEmpty else {
-            print("WARNING: OpenUV Key is missing. Using mock data for development.")
-            return (4.2, 4.2) // Return a mock UV index instead of throwing
+            throw UVServiceError.apiError("OpenUV API Key is missing")
         }
 
         let urlString = "https://api.openuv.io/api/v1/uv?lat=\(latitude)&lng=\(longitude)"
@@ -103,12 +102,7 @@ actor UVService {
             
             if statusCode == 403 {
                 if let errorResponse = try? JSONDecoder().decode(OpenUVErrorResponse.self, from: data) {
-                    #if DEBUG
-                    print("⚠️ Quota exceeded, but we are in DEBUG mode. Returning mock data.")
-                    return (4.2, 5.5) // Mock data for development
-                    #else
                     throw UVServiceError.apiError(errorResponse.error)
-                    #endif
                 }
             }
             
@@ -123,7 +117,26 @@ actor UVService {
         // Логируем распарсенные данные
         print("✅ [NETWORK SUCCESS] Parsed UV Index: \(decoded.result.uv), Max UV: \(decoded.result.uvMax ?? decoded.result.uv)")
 
-        return (decoded.result.uv, decoded.result.uvMax ?? decoded.result.uv)
+        let sunrise = decoded.result.sunInfo?.sunTimes?.sunrise.flatMap { parseISO8601Date($0) }
+        let sunset = decoded.result.sunInfo?.sunTimes?.sunset.flatMap { parseISO8601Date($0) }
+        return (decoded.result.uv, decoded.result.uvMax ?? decoded.result.uv, sunrise, sunset)
+    }
+
+    private func parseISO8601Date(_ value: String) -> Date? {
+        let trimmed = value.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return nil }
+
+        if #available(iOS 11.0, *) {
+            let formatter = ISO8601DateFormatter()
+            formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+            if let date = formatter.date(from: trimmed) {
+                return date
+            }
+        }
+
+        let formatter = ISO8601DateFormatter()
+        formatter.formatOptions = [.withInternetDateTime]
+        return formatter.date(from: trimmed)
     }
 }
 

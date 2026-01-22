@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import SwiftUI
 
 enum SkinType: Int, Codable, CaseIterable {
     case type1 = 1 // Type I: Always burns, never tans (pale white skin)
@@ -53,5 +54,19 @@ struct UserProfile: Codable {
     var skinType: SkinType?
     var isOnboardingCompleted: Bool = false
     var isPremium: Bool = false
+}
+
+enum AppTheme: String, CaseIterable {
+    case system = "system"
+    case light = "light"
+    case dark = "dark"
+    
+    var name: LocalizedStringKey {
+        switch self {
+        case .system: return "theme_system"
+        case .light: return "theme_light"
+        case .dark: return "theme_dark"
+        }
+    }
 }
 

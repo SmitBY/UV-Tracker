@@ -101,8 +101,11 @@ private struct BottomTabBar: View {
                         .fill(Color(hex: "818CD5"))
                         .frame(width: 44, height: 44)
                         .shadow(color: Color.black.opacity(0.25), radius: 4, x: 0, y: 4)
-                    Image(systemName: "plus")
-                        .font(.system(size: 20, weight: .medium))
+                    Image("Group")
+                        .resizable()
+                        .renderingMode(.template)
+                        .scaledToFit()
+                        .frame(width: 20, height: 20)
                         .foregroundColor(.white)
                 }
                 .frame(maxWidth: .infinity)

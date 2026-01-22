@@ -11,6 +11,7 @@ struct ProfileView: View {
     @ObservedObject private var profileManager = ProfileManager.shared
     @ObservedObject private var storeManager = StoreManager.shared
     @AppStorage("app_language") private var appLanguage: String = "system"
+    @AppStorage("app_theme") private var appTheme: AppTheme = .system
     @Environment(\.locale) private var currentLocale
     
     @State private var isPaywallPresented: Bool = false
@@ -52,9 +53,9 @@ struct ProfileView: View {
                     .padding(.top)
                 
                 List {
-                    Section(header: Text("My Profile").foregroundColor(.secondary)) {
+                    Section(header: Text("profile_my_profile").foregroundColor(.secondary)) {
                         HStack {
-                            Text("Skin Type").foregroundColor(.primary)
+                            Text("profile_skin_type").foregroundColor(.primary)
                             Spacer()
                             if let skinType = profileManager.profile.skinType {
                                 Text(LocalizedStringKey(skinType.nameKey))
@@ -69,7 +70,7 @@ struct ProfileView: View {
                             isPaywallPresented = true
                         } label: {
                             HStack {
-                                Text("Premium").foregroundColor(.primary)
+                                Text("profile_premium").foregroundColor(.primary)
                                 Spacer()
                                 Text(profileManager.profile.isPremium ? LocalizedStringKey("Yes") : LocalizedStringKey("No"))
                                     .foregroundColor(profileManager.profile.isPremium ? .green : .secondary)
@@ -82,9 +83,9 @@ struct ProfileView: View {
                         .buttonStyle(.plain)
                     }
                     
-                    Section(header: Text("Language").foregroundColor(.secondary)) {
+                    Section(header: Text("profile_language").foregroundColor(.secondary)) {
                         Picker("", selection: $appLanguage) {
-                            Text("System").tag("system")
+                            Text("profile_system").tag("system")
                             ForEach(supportedLanguageIdentifiers, id: \.self) { identifier in
                                 Text(languageDisplayName(for: identifier)).tag(identifier)
                             }
@@ -92,12 +93,21 @@ struct ProfileView: View {
                         .pickerStyle(.menu)
                     }
                     
+                    Section(header: Text("profile_appearance").foregroundColor(.secondary)) {
+                        Picker("", selection: $appTheme) {
+                            ForEach(AppTheme.allCases, id: \.self) { theme in
+                                Text(theme.name).tag(theme)
+                            }
+                        }
+                        .pickerStyle(.segmented)
+                    }
+                    
                     Section {
                         Button(role: .destructive) {
                             // Reset onboarding for testing
                             profileManager.profile.isOnboardingCompleted = false
                         } label: {
-                            Text("Reset Onboarding")
+                            Text("profile_reset_onboarding")
                         }
                     }
                 }

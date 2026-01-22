@@ -22,11 +22,26 @@ struct OpenUVResponse: Codable, Sendable {
 struct UVResult: Codable, Sendable {
     let uv: Double
     let uvMax: Double?
+    let sunInfo: SunInfo?
 
     enum CodingKeys: String, CodingKey {
         case uv
         case uvMax = "uv_max"
+        case sunInfo = "sun_info"
     }
+}
+
+struct SunInfo: Codable, Sendable {
+    let sunTimes: SunTimes?
+
+    enum CodingKeys: String, CodingKey {
+        case sunTimes = "sun_times"
+    }
+}
+
+struct SunTimes: Codable, Sendable {
+    let sunrise: String?
+    let sunset: String?
 }
 
 struct OpenUVErrorResponse: Codable, Sendable {
