@@ -15,8 +15,8 @@ struct BurnTimeCalculator {
     ///   - spf: SPF factor (default is 1 for no protection).
     /// - Returns: Time in seconds before burning.
     static func secondsToBurn(skinType: SkinType, uvIndex: Double, spf: Double = 1.0) -> Int {
-        guard uvIndex > 0 else { return 86400 } // No burn if UV is 0 (or return a very high value)
-        
+        guard uvIndex > 0 else { return 43200 } // No burn if UV is 0, return 12 hours max
+
         // Base time in minutes for UV Index 1 based on skin type
         // Source: General dermatological guidelines for Fitzpatrick scales
         let baseMinutes: Double
@@ -28,11 +28,14 @@ struct BurnTimeCalculator {
         case .type5: baseMinutes = 60.0
         case .type6: baseMinutes = 90.0
         }
-        
+
         // Formula: (Base Time / UV Index) * SPF
         let minutesToBurn = (baseMinutes / uvIndex) * spf
-        
-        return Int(minutesToBurn * 60)
+
+        let secondsToBurn = Int(minutesToBurn * 60)
+
+        // If time exceeds 12 hours, reset to 12 hours (43,200 seconds)
+        return secondsToBurn > 43200 ? 43200 : secondsToBurn
     }
 }
 

@@ -58,7 +58,11 @@ class TimerManager: ObservableObject {
     }
     
     private init() {
-        restoreSessionIfNeeded()
+        // Defer restoration to avoid "Publishing changes from within view updates" 
+        // when shared instance is first accessed during a view update (e.g. in @StateObject)
+        Task { @MainActor in
+            self.restoreSessionIfNeeded()
+        }
 
         // Keep the countdown accurate after background/close
         NotificationCenter.default.publisher(for: UIApplication.willEnterForegroundNotification)
@@ -104,7 +108,10 @@ class TimerManager: ObservableObject {
         startLiveActivity(endDate: end, uvIndex: uvIndex)
         
         // Schedule Notification
-        NotificationManager.shared.scheduleTimerFinishedNotification(seconds: seconds)
+        NotificationManager.shared.scheduleTimerFinishedNotification(
+            seconds: seconds,
+            sound: ProfileManager.shared.profile.timerNotificationSound
+        )
         
         startTicker()
     }
@@ -172,7 +179,10 @@ class TimerManager: ObservableObject {
         
         persistSession()
         updateLiveActivity()
-        NotificationManager.shared.scheduleTimerFinishedNotification(seconds: secondsLeft)
+        NotificationManager.shared.scheduleTimerFinishedNotification(
+            seconds: secondsLeft,
+            sound: ProfileManager.shared.profile.timerNotificationSound
+        )
     }
     
     func updateSessionUVIndex(_ uvIndex: Double) {
@@ -194,7 +204,10 @@ class TimerManager: ObservableObject {
         
         persistSession()
         updateLiveActivity()
-        NotificationManager.shared.scheduleTimerFinishedNotification(seconds: secondsLeft)
+        NotificationManager.shared.scheduleTimerFinishedNotification(
+            seconds: secondsLeft,
+            sound: ProfileManager.shared.profile.timerNotificationSound
+        )
     }
     
     func syncWithClock(triggerFinishIfNeeded: Bool) {
@@ -348,8 +361,10 @@ class TimerManager: ObservableObject {
     
     private func calculateRemainingSeconds(forUVIndex uvIndex: Double) -> Int {
         let remainingUVIndexSeconds = max(0, burnLimitUVIndexSeconds - accumulatedUVIndexSeconds)
-        guard uvIndex > 0 else { return 86400 } // "infinite" in UI terms when UV == 0
-        return Int((remainingUVIndexSeconds / uvIndex).rounded(.up))
+        guard uvIndex > 0 else { return 43200 } // Max 12 hours when UV == 0
+        let calculatedSeconds = Int((remainingUVIndexSeconds / uvIndex).rounded(.up))
+        // Cap at 12 hours (43,200 seconds)
+        return min(calculatedSeconds, 43200)
     }
     
     private func accumulateDose(until date: Date) {
