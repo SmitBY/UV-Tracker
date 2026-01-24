@@ -28,13 +28,27 @@ class NotificationManager: NSObject, UNUserNotificationCenterDelegate {
         }
     }
     
-    func scheduleTimerFinishedNotification(seconds: Int) {
+    func scheduleTimerFinishedNotification(seconds: Int, sound: TimerNotificationSound) {
         cancelAllNotifications()
         
         let content = UNMutableNotificationContent()
         content.title = String(localized: "notification_title")
         content.body = String(localized: "notification_body")
-        content.sound = .default
+        if #available(iOS 15.0, *) {
+            content.interruptionLevel = .timeSensitive
+        }
+        switch sound {
+        case .default:
+            content.sound = .default
+        case .ringtone:
+            if #available(iOS 15.0, *) {
+                content.sound = .defaultRingtone
+            } else {
+                content.sound = .default
+            }
+        case .mute:
+            content.sound = nil
+        }
         
         // Add action for +10 min
         let addTenAction = UNNotificationAction(identifier: "ADD_TEN_MIN", title: String(localized: "add_10_min"), options: .foreground)
@@ -51,6 +65,11 @@ class NotificationManager: NSObject, UNUserNotificationCenterDelegate {
         let center = UNUserNotificationCenter.current()
         center.removePendingNotificationRequests(withIdentifiers: [timerFinishedNotificationId])
         center.removeDeliveredNotifications(withIdentifiers: [timerFinishedNotificationId])
+    }
+    
+    // Present notification (with sound) while app is in foreground
+    func userNotificationCenter(_ center: UNUserNotificationCenter, willPresent notification: UNNotification, withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
+        completionHandler([.banner, .sound])
     }
     
     // Handle notification actions

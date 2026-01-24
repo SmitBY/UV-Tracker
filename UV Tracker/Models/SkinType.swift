@@ -50,10 +50,44 @@ enum SkinType: Int, Codable, CaseIterable {
     }
 }
 
+enum TimerNotificationSound: String, Codable, CaseIterable, Identifiable {
+    case `default` = "default"
+    case ringtone = "ringtone"
+    case mute = "mute"
+    
+    var id: String { rawValue }
+    
+    var title: LocalizedStringKey {
+        switch self {
+        case .default: return "notification_sound_default"
+        case .ringtone: return "notification_sound_ringtone"
+        case .mute: return "notification_sound_mute"
+        }
+    }
+}
+
 struct UserProfile: Codable {
     var skinType: SkinType?
     var isOnboardingCompleted: Bool = false
     var isPremium: Bool = false
+    var timerNotificationSound: TimerNotificationSound = .default
+    
+    enum CodingKeys: String, CodingKey {
+        case skinType
+        case isOnboardingCompleted
+        case isPremium
+        case timerNotificationSound
+    }
+    
+    init() {}
+    
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        skinType = try container.decodeIfPresent(SkinType.self, forKey: .skinType)
+        isOnboardingCompleted = try container.decodeIfPresent(Bool.self, forKey: .isOnboardingCompleted) ?? false
+        isPremium = try container.decodeIfPresent(Bool.self, forKey: .isPremium) ?? false
+        timerNotificationSound = try container.decodeIfPresent(TimerNotificationSound.self, forKey: .timerNotificationSound) ?? .default
+    }
 }
 
 enum AppTheme: String, CaseIterable {
