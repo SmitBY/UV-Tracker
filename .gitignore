@@ -1,0 +1,17 @@
+# Secrets and API keys
+UV Tracker/Secrets.xcconfig
+
+# Xcode
+*.xcconfig
+!UV Tracker/Secrets.xcconfig.example
+
+# User-specific files
+*.xcuserstate
+*.xcuserdatad/
+
+# Build files
+build/
+DerivedData/
+
+# macOS
+.DS_Store
